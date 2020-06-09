@@ -1,0 +1,84 @@
+﻿@page
+@{
+
+}
+
+@section ScriptsHead
+    {
+    <script type="text/javascript">
+        async function wait(timeToWait) {
+            return new Promise((resolve) => setTimeout(resolve, timeToWait));
+        }
+
+        async function GetLocationsRetry() {
+            let retries = 0;
+            let shouldRetry = true;
+
+            return new Promise(async function (resolve) {
+                while (shouldRetry) {
+                    try {
+                        let response = await fetch("LocationView/Locations");
+                        if (await !response.ok) {
+                            throw Error(response.statusText);
+                        }
+                        resolve(response.json());
+                        shouldRetry = false;
+                    } catch (error) {
+                        console.log("Failed to retrieve Locations. Trying again.");
+                        shouldRetry = true;
+                    }
+
+                    if (shouldRetry) {
+                        retries++;
+                        await wait((Math.pow(2, retries) * 1000));
+                    }
+                }
+            });
+        }
+
+        window.fetchLocations = GetLocationsRetry();
+    </script>
+}
+
+@section Libraries
+    {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+          integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+          crossorigin="" />
+
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+            integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+            crossorigin=""></script>
+}
+
+@*<div class="container">
+    <div class="row">
+        <div class="panel mb-3">
+            <div class="panel-heading">
+                Filters
+            </div>
+            <div class="panel-body">
+                Twenty 3
+            </div>
+        </div>
+    </div>
+    
+</div>*@
+
+<div class="row">
+
+    <div class="card">
+        <div class="card-body">
+            Hello World
+        </div>
+    </div>
+
+</div>
+<div class="row">
+    <div id="MapViewId"></div>
+</div>
+
+@section Scripts
+    {
+    <script src="~/js/MapView.js"></script>
+}
