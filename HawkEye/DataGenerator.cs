@@ -31,7 +31,8 @@ namespace HawkEye
                         PostalCode = 82050,
                         Country = "US",
                         Latitude = 41.391426,
-                        Longitude = -104.469553
+                        Longitude = -104.469553,
+                        LocationType = "NNI"
                     },
                     new Models.Location
                     {
@@ -43,7 +44,9 @@ namespace HawkEye
                         PostalCode = 57104,
                         Country = "US",
                         Latitude = 43.546650,
-                        Longitude = -96.729790
+                        Longitude = -96.729790,
+                        LocationType = "SDN Lit Bldgs"
+
                     },
                     new Models.Location
                     {
@@ -55,7 +58,8 @@ namespace HawkEye
                         PostalCode = 55901,
                         Country = "US",
                         Latitude = 44.038477,
-                        Longitude = -92.524339
+                        Longitude = -92.524339,
+                        LocationType = "NNI"
                     });
 
                 context.SaveChanges();

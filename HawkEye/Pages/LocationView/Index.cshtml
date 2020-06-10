@@ -49,34 +49,40 @@
     <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
             integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
             crossorigin=""></script>
+
+    <script src='https://api.mapbox.com/mapbox.js/v3.3.1/mapbox.js'></script>
+    <link href='https://api.mapbox.com/mapbox.js/v3.3.1/mapbox.css' rel='stylesheet' />
 }
 
-@*<div class="container">
-    <div class="row">
-        <div class="panel mb-3">
-            <div class="panel-heading">
-                Filters
-            </div>
-            <div class="panel-body">
-                Twenty 3
-            </div>
-        </div>
-    </div>
-    
-</div>*@
 
 <div class="row">
-
-    <div class="card">
-        <div class="card-body">
-            Hello World
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <p>Perimeter Filter</p>
+                        <select id="perimeterFilter" data-live-search="true">
+                            <option value="500 ft">500 ft</option>
+                            <option value="10 miles">10 mi</option>
+                        </select>
+                        <p>Selected Coordinates:</p>
+                        <div id="selectedCoordsPanel"></div>
+                    </div>
+                    <div class="col-6">
+                        <p>Location Type Filter</p>
+                        <select id="locationTypeFilter" class="selectpicker" multiple data-live-search="true">
+                            <option value="NNI">NNI</option>
+                            <option value="SDN Lit Buildings">SDN Lit Bldgs</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
 </div>
-<div class="row">
-    <div id="MapViewId"></div>
-</div>
+<div id="MapViewId"></div>
 
 @section Scripts
     {
