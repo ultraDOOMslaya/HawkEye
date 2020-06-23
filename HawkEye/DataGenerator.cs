@@ -60,6 +60,32 @@ namespace HawkEye
                         Latitude = 44.038477,
                         Longitude = -92.524339,
                         LocationType = "NNI"
+                    },
+                    new Models.Location
+                    {
+                        Id = 4,
+                        AddressLine1 = "3935 HWY 14 ",
+                        FullAddress = "3935 HWY 14, Brandon, SD 55901",
+                        City = "Brandon",
+                        State = "SD",
+                        PostalCode = 55901,
+                        Country = "US",
+                        Latitude = 43.5947,
+                        Longitude = -96.5720,
+                        LocationType = "SDN Lit Bldgs"
+                    },
+                    new Models.Location
+                    {
+                        Id = 5,
+                        AddressLine1 = "5841 S. Corporate Place",
+                        FullAddress = "5841 S. Corporate Place, Sioux Falls, SD 57108",
+                        City = "Sioux Falls",
+                        State = "SD",
+                        PostalCode = 57108,
+                        Country = "US",
+                        Latitude = 43.4464,
+                        Longitude = -96.8359,
+                        LocationType = "NNI"
                     });
 
                 context.SaveChanges();
