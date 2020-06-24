@@ -7,16 +7,16 @@ namespace HawkEye.Models
 {
     public class Location
     {
-        public int Id { get; set; }
+        public int LocationId { get; set; }
         public string AddressLine1 { get; set; }
         public string FullAddress { get; set; }
         public string City { get; set; }
         public string County { get; set; }
         public string State { get; set; }
-        public int PostalCode { get; set; }
+        public string PostalCode { get; set; }
         public string Country { get; set; }
-        public double Latitude { get; set; }
-        public double Longitude { get; set; }
+        public decimal Latitude { get; set; }
+        public decimal Longitude { get; set; }
         public string LocationType { get; set; }
     }
 }

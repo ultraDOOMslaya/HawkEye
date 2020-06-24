@@ -1,4 +1,7 @@
 ﻿const DefaultBoundaryPoints = [new L.LatLng(24.4466667, -123.771694), new L.LatLng(49.384472, -66.949778)];
+const FeetToMetersConversion = 3.2808;
+const MilesToFeetConversion = 0.00018939;
+
 /** map attributes **/
 let mymap = L.map('MapViewId').setView([43.5473, -96.7283], 13);
 let latLngBoundary;
@@ -12,15 +15,48 @@ let SDNLitBuildingLocations;
 let overlays;
 let selectedMarker;
 let currentLayerID;
+
 /** filter attributes layer **/
 let filterLayer;
 let filterCircle;
+let filterDistance;
+
+let serviceAreaOptions = {
+    "None": "None",
+    "SDNServiceArea": "SDNServiceArea"
+};
+
+let distanceOptions = {
+    "500 feet": { distance: 500, type:"feet" },
+    "10 miles": { distance: 10, type:"miles" }
+};
 
 let filters = {
     locationType: new Array(),
     proximity: false
 };
 
+let geojsonSDNServiceAreaStyles = {
+    fillColor: "#57d674",
+    fillOpacity: 0.8
+}
+
+/** Experimental GeoJSON polygons **/
+let SDNServiceAreaGeometry = {
+    "type": "Feature",
+    "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+            [-104.8202, 41.1400],
+            [-109.0565, 44.5263],
+            [-110.7624, 43.4799],
+            [-111.8910, 40.7608]
+        ]]
+    }
+};
+let SDNServiceAreaLayer = new L.layerGroup();
+SDNServiceAreaLayer.addTo(mymap);
+//SDNServiceAreaLayer.addLayer(L.geoJSON(SDNServiceAreaGeometry));
 
 L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
@@ -28,7 +64,7 @@ L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
     id: 'mapbox/streets-v11',
     tileSize: 512,
     zoomOffset: -1,
-    accessToken: 'pk.eyJ1IjoibWFha2VzYmUiLCJhIjoiY2tiNnZpbWF1MDJrOTJzbnZqbTJ3eXlrcSJ9.NV7CRKISyOqH4x-yUClONg'
+    accessToken: ''
 }).addTo(mymap);
 
 var greenIcon = new L.Icon({
@@ -98,8 +134,6 @@ function getBoundsFromPoints(latLngs) {
     return latLngs.map(x => x.toBounds(1)).reduce((a, b) => a.extend(b));
 }
 
-$("#locationTypeFilter")
-
 $("#locationTypeFilter").change(function () {
     removeLayers();
     clearFilterLayer();
@@ -108,20 +142,50 @@ $("#locationTypeFilter").change(function () {
         filters['locationType'] = [];
 
     let locationTypeFilterState = $("#locationTypeFilter option:selected");
-    console.log("you rang?");
     locationTypeFilterState.each(function () {
-        //overlays[$(this).val()].addTo(mymap);
         filters["locationType"].push($(this).val().toString());
 
     });
 
-    if (locationTypeFilterState.length === 0) {
+    if (locationTypeFilterState.length === 0)
         filters["locationType"].push("All");
-        console.log("pushed all onto loc type");
-    }
 
     filter();
 }).trigger("change");
+
+$("#perimeterFilter").change(function () {
+
+    let perimeterFilterState = $("#perimeterFilter option:selected");
+    perimeterFilterState.each(function () {
+        let distanceOption = distanceOptions[$(this).val()];
+
+        if (distanceOption.type == "miles")
+            filterDistance = milesToMeters(distanceOption.distance);
+
+        if (distanceOption.type == "feet")
+            filterDistance = feetToMeters(distanceOption.distance);
+
+        if (filters["proximity"]) {
+            resetFilter();
+            filterProximity();
+        }
+            
+    });
+}).trigger("change");
+
+$("#ServiceAreaToggle").change(function () {
+
+    let serviceAreaToggleState = $("#ServiceAreaToggle option:selected");
+    serviceAreaToggleState.each(function () {
+        if (serviceAreaOptions["None"] == $(this).val())
+            mymap.removeLayer(SDNServiceAreaLayer);
+
+        if (serviceAreaOptions["SDNServiceArea"] == $(this).val())
+            SDNServiceAreaLayer.addTo(mymap);
+//SDNServiceAreaLayer.addLayer(L.geoJSON(SDNServiceAreaGeometry));
+        mymap.addLayer(SDNServiceAreaLayer.addLayer(L.geoJSON(SDNServiceAreaGeometry)));
+    });
+});
 
 function removeLayers() {
     if (overlays)
@@ -136,13 +200,12 @@ function removeLayers() {
         mymap.removeLayer(filterCircle);
 }
 
-function clearFilterLayer() {[]
+function clearFilterLayer() {
     if (filterCircle)
         mymap.removeLayer(filterCircle);
 }
 
 function markerOnClick(e) {
-    console.log(this);
     //let marker = L.marker([this.getLatLng().lat, this.getLatLng().lng,], { icon: yellowIcon }).on('click', markerOnClick);
     //marker.addTo(mymap);
     selectedMarker = this;
@@ -177,8 +240,8 @@ function resetFilter() {
 
 function redrawMapBounds() {
     if (filters['proximity']) {
-        var bounds = L.latLngBounds(selectedMarker.getLatLng(), selectedMarker.getLatLng());
-        mymap.fitBounds(bounds);
+        let zoom = 13;
+        mymap.setView(selectedMarker.getLatLng(), zoom);
     }
     else {
         mymap.fitBounds(latLngBoundary);
@@ -186,44 +249,50 @@ function redrawMapBounds() {
 }
 
 function filter() {   
-    console.log(filters);
     let markersToFilter = new Array();
 
     if (filters['locationType']) {
         filters['locationType'].forEach(filter => {
-            console.log(markerGroups[filter]);
             if (markerGroups[filter])
                 markersToFilter = markersToFilter.concat(markerGroups[filter]);
         });
     }
-    console.log("location type markers: {}", markersToFilter);
 
     if (filters['proximity']) {
         $("#perimeterFilter").val()
-        filterCircle = L.circle(selectedMarker.getLatLng(), 50000, {
+        filterCircle = L.circle(selectedMarker.getLatLng(), filterDistance, {
             opacity: 1,
             weight: 1,
             fillOpacity: 0.4
         }).addTo(mymap);
 
-        markersToFilter = markersToFilter.filter(x => x.getLatLng().distanceTo(selectedMarker.getLatLng()) < 50000);
+        console.log(filterDistance);
+        markersToFilter = markersToFilter.filter(x => x.getLatLng().distanceTo(selectedMarker.getLatLng()) < filterDistance);
     }
-    //console.log("proximity markers: {}", markersToFilter);
 
     filterLayer = L.layerGroup(markersToFilter).addTo(mymap);
-    //var filteredLocations = L.geoJSON(markers, { filter: proximityFilter }).addTo(mymap);
 }
 
 mymap.on('baselayerchange', function (e) {
     currentLayerID = e.layer._leaflet_id;
 });
 
+/** Util functions **/
 //var RADIUS = 500000;
 //var filterCircle = L.circle(L.latLng(40, -75), RADIUS, {
 //    opacity: 1,
 //    weight: 1,
 //    fillOpacity: 0.4
 //}).addTo(map);
+
+function milesToMeters(distanceInMiles) {
+    let distanceInFeet = distanceInMiles / MilesToFeetConversion;
+    return feetToMeters(distanceInFeet);
+}
+
+function feetToMeters(distanceInFeet) {
+    return distanceInFeet / FeetToMetersConversion;
+}
 
 /*** Location Class ***/
 function Location(latlng) {

@@ -63,17 +63,25 @@
                     <div class="col-6">
                         <p>Perimeter Filter</p>
                         <select id="perimeterFilter" data-live-search="true">
-                            <option value="500 ft">500 ft</option>
+                            <option value="500 feet">500 ft</option>
                             <option value="10 miles">10 mi</option>
                         </select>
                         <p>Selected Coordinates:</p>
                         <div id="selectedCoordsPanel"></div>
                     </div>
-                    <div class="col-6">
+                    <div class="col-3">
                         <p>Location Type Filter</p>
                         <select id="locationTypeFilter" class="selectpicker" multiple data-live-search="true">
                             <option value="NNI">NNI</option>
                             <option value="SDN Lit Buildings">SDN Lit Bldgs</option>
+                        </select>
+                    </div>
+                    <div class="col-3">
+                        <p>Service Area Toggle</p>
+                        <select id="ServiceAreaToggle" class="selectpicker" data-live-search="true">
+                            <option value="None">None</option>
+                            <option value="MemberServiceArea">Member Service Area</option>
+                            <option value="SDNServiceArea">SDN Service Area</option>
                         </select>
                     </div>
                 </div>
